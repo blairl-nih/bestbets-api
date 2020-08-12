@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,7 +56,7 @@ namespace NCI.OCPL.Api.BestBets.Controllers
             IBestBetsDisplayService displayService,
             IHealthCheckService healthService,
             ILogger<BestBetsController> logger
-        ) 
+        )
         {
             this._matchService = matchService;
             this._displayService = displayService;
@@ -71,30 +72,33 @@ namespace NCI.OCPL.Api.BestBets.Controllers
         /// <param name="language">The language of the results. This should be either 'en' for English or 'es' for Spanish.</param>
         /// <param name="term">The search term to get categories for.</param>
         // GET api/values/5
-        [HttpGet("{collection}/{language}/{term}")]
+        [HttpGet("{collection}/{language}/{*term}")]
         public async Task<IBestBetDisplay[]> Get(string collection, string language, string term)
         {
 
             if (String.IsNullOrWhiteSpace(collection))
                 throw new APIErrorException(400, "You must supply a collection, language and search term");
 
-            if (collection.ToLower() != "preview" && collection.ToLower() != "live") 
+            if (collection.ToLower() != "preview" && collection.ToLower() != "live")
                 throw new APIErrorException(404, "Unsupported collection. Please try 'live'");
-            
+
             if (String.IsNullOrWhiteSpace(language))
                 throw new APIErrorException(400, "You must supply a language and search term");
 
             if (language.ToLower() != "en" && language.ToLower() != "es")
                 throw new APIErrorException(404, "Unsupported Language. Please try either 'en' or 'es'");
-            
+
             if (String.IsNullOrWhiteSpace(term))
                 throw new APIErrorException(400, "You must supply a search term");
+
+            // Term comes from from a catch-all parameter, so make sure it's been decoded.
+            term = WebUtility.UrlDecode(term);
 
             // Step 1. Remove Punctuation
             string cleanedTerm = CleanTerm(term);
 
             string[] categoryIDs = await _matchService.GetMatches(collection.ToLower(), language.ToLower(), cleanedTerm);
-            
+
             List<IBestBetDisplay> displayItems = new List<IBestBetDisplay>();
 
             var categoryTasks = from categoryID in categoryIDs
@@ -130,7 +134,7 @@ namespace NCI.OCPL.Api.BestBets.Controllers
             {
                 _healthService
             };
-            
+
             // Check for all services so we can log the status of all failures rather than
             // than just the first one.
             bool allHealthy = true;
@@ -177,7 +181,7 @@ namespace NCI.OCPL.Api.BestBets.Controllers
             }
             term = sb.ToString();
 
-            //TODO: Verify that this list is not actually a duplicate of 
+            //TODO: Verify that this list is not actually a duplicate of
             return System.Text.RegularExpressions.Regex.Replace(term, "[-':;\"\\./]", "");
         }
 
