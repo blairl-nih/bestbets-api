@@ -23,7 +23,6 @@ namespace NCI.OCPL.Api.BestBets.Tests
         public static IEnumerable<object[]> GetTokenCountData => new[] {
             new object[] {
                 "pancoast",
-                "en",
                 new object[] {
                     new { token = "pancoast", start_offset = 0, end_offset = 6, type = "<ALPHANUM>", position= 0 },
                 },
@@ -32,7 +31,6 @@ namespace NCI.OCPL.Api.BestBets.Tests
 
             new object[] {
                 "breast cancer",
-                "en",
                 new object[] {
                     new { token = "breast", start_offset = 0, end_offset = 6, type = "<ALPHANUM>", position= 0 },
                     new { token = "cancer", start_offset = 7, end_offset = 13, type = "<ALPHANUM>", position= 1 },
@@ -42,13 +40,20 @@ namespace NCI.OCPL.Api.BestBets.Tests
             //TODO: Add crazier tests
         };
 
+        /// <summary>
+        /// Verify the GetTokenCount() method knows how to handle responses
+        /// from elastic search.
+        /// </summary>
+        /// <param name="searchTerm">The search term to tokenizse.</param>
+        /// <param name="responseTokens">The simulated response from elasticsearch.</param>
+        /// <param name="expectedCount">The expected token count.</param>
+        /// <returns></returns>
         [Theory, MemberData(nameof(GetTokenCountData))]
         public async void GetTokenCount_Responses(
-           string searchTerm,           
-           string language,
-           object[] responseTokens,
-           int expectedCount
-       )
+            string searchTerm,
+            object[] responseTokens,
+            int expectedCount
+        )
         {
 
             ElasticsearchInterceptingConnection conn = new ElasticsearchInterceptingConnection();
