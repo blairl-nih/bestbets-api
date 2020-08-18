@@ -1,0 +1,3 @@
+[submodule "integration-tests/bin/bestbets-loader"]
+	path = integration-tests/bin/bestbets-loader
+	url = http://github.com/nciocpl/bestbets-loader

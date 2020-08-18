@@ -257,3 +257,10 @@ buildNumber.properties
 .DS_Store
 
 .vscode/
+
+# Integration test output.
+target/*
+integration-tests/target
+
+# Include Karate for tests
+!integration-tests/bin
